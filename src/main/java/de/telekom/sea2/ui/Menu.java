@@ -7,6 +7,7 @@ import de.telekom.sea2.model.Person;
 import de.telekom.sea2.persistence.PersonRepository;
 import java.io.Closeable;
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class Menu implements Closeable {
 
@@ -23,7 +24,7 @@ public class Menu implements Closeable {
 		System.out.println("Das Programm ist jetzt beendet. Goodbye!!");
 	}
 
-	public void keepAsking() throws IOException {
+	public void keepAsking() throws IOException, SQLException {
 		String choice;  
 		do {
 			showMenu();
@@ -86,8 +87,9 @@ public class Menu implements Closeable {
 	 * @param eingabe
 	 * @throws MyException
 	 * @throws IOException
+	 * @throws SQLException 
 	 */
-	private void checkMenu(String eingabe) throws IOException {
+	private void checkMenu(String eingabe) throws IOException, SQLException {
 		switch (eingabe.toUpperCase()) {
 		case "1":
 			inputPerson();
@@ -148,7 +150,7 @@ public class Menu implements Closeable {
 	}
 
 	// 1. Person anlegen
-	private void inputPerson() throws IOException {
+	private void inputPerson() throws IOException, SQLException {
 		Person person = new Person();
 		System.out.println("Anrede eingeben:");
 		String salu = scanner.nextLine().trim();
@@ -175,7 +177,7 @@ public class Menu implements Closeable {
 	}
 
 	// 2. Person löschen
-	private void removePerson() {
+	private void removePerson() throws SQLException {
 		System.out.print("ID zum löschen: ");
 		long l = scanner.nextLong();
 		scanner.nextLine();
@@ -196,7 +198,7 @@ public class Menu implements Closeable {
 	}
 
 	// 4. Personenliste löschen
-	private void removeAll() {
+	private void removeAll() throws SQLException {
 		list.deleteAll();
 	}
 
