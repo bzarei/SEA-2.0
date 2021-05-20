@@ -43,20 +43,26 @@ public class PersonRepository {
 	public Person get(long id) throws SQLException {
 		
 		query = "SELECT * FROM personen WHERE id=?";
-		PreparedStatement ps = connection.prepareStatement(query);
-		ps.setLong(1, id);
-		result = ps.executeQuery();
-		if (result.next()) {
-			Person person = new Person();
-			person.setId(result.getLong(1));
-			person.setSalutation(Salutation.fromByte(result.getByte(2)));
-			person.setName(result.getString(3));
-			person.setLastname(result.getString(4));
-			return person;
-		}
+		try (PreparedStatement ps = connection.prepareStatement(query)) {
+			ps.setLong(1, id);
+				result = ps.executeQuery();
+				if (result.next()) {
+					Person person = new Person();
+					person.setId(result.getLong(1));
+					person.setSalutation(Salutation.fromByte(result.getByte(2)));
+					person.setName(result.getString(3));
+					person.setLastname(result.getString(4));
+					return person;
+				} 
+				return null;
+		} catch (SQLException ex) {
+			System.out.println(" Ein Fehler in Methode get(id) aufgetretten! ");
+			ex.getSQLState();
+			ex.getLocalizedMessage();
+		  }
 		return null;
 	}
-	
+		
 	public boolean update(Person p) throws SQLException {
 
 		if (p == null)                // person points of null 
@@ -149,7 +155,7 @@ public class PersonRepository {
 		}		
 	}
 	
-	public Person[] getAll() throws SQLException {
+	public Person[] getAll() throws Exception {
 		
 			Person[] list = new Person[size()];
 			result.beforeFirst();                    // move cursur to the beginning of first record
@@ -164,6 +170,52 @@ public class PersonRepository {
 			}
 			printList(list);
 			return list;
+	}
+	
+	/**
+	 * this method returns all similar names. ctl is a control parameter 
+	 * used to check whether a search should be carried out for first name or surname.
+     * With ctrl = 1 (comming from Menu) will be found all similar first names 
+     * and with ctl = 2 all similar last names will be found.  
+	 * @param name
+	 * @param ctl 
+	 * @return list of persons if list not empty otherweise null!
+	 * @throws SQLException
+	 */
+	public Person[] getSimilarNames(String name, String ctl) throws SQLException {
+				
+		Person[] list = new Person[size()];
+		switch (ctl) { 
+			case "1":
+				query = "SELECT * FROM personen WHERE name like ?";
+				break;
+			case "2":
+				query = "SELECT * FROM personen WHERE lastname like ?";
+				break;
+		}
+		try (PreparedStatement ps = connection.prepareStatement(query)) {
+			ps.setString(1, name + "%");
+			result = ps.executeQuery();
+			if (result.first()) {
+				result.beforeFirst();
+				int index = 0;
+				while (result.next()) {
+					Person person = new Person();
+					person.setId(result.getLong(1));
+					person.setSalutation(Salutation.fromByte(result.getByte(2)));
+					person.setName(result.getString(3));
+					person.setLastname(result.getString(4));
+					list[index++] = person;
+				}
+				printList(list);
+			}
+			return list;
+		} catch (Exception ex) {
+			System.out.println(" Ein Fehler in Methode getSimilarNames aufgetretten! ");
+			ex.getLocalizedMessage();
+			ex.fillInStackTrace();
+		  }
+		return list;
 	}
 	
 	public int size() throws SQLException {
@@ -182,8 +234,13 @@ public class PersonRepository {
 		return 0;
 	}
 	
-	private void printList(Person[] list) throws SQLException {
-
+	/**
+	 * this is a private method known only for this Repository to print 
+	 * all array elements of Person list: Person[].
+	 * @param list
+	 * @throws SQLException
+	 */
+	private void printList(Person[] list) throws Exception {
 		System.out.println("---------------------------------------");
 		System.out.println("  Inhalt der Liste mit " + size() + " Personen:");
 		System.out.println("---------------------------------------");
@@ -199,7 +256,6 @@ public class PersonRepository {
 		else 
 			System.out.println("Liste ist leer!!");
 			System.out.println();
-	}
-
+	}	
 	
 } // Ende Klasse PersonRepository
