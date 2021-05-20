@@ -20,6 +20,15 @@ public class PersonRepository {
 		this.connection = co;
 	}
 	
+	/**
+	 * this method is used for adding a new person into table personen.
+	 * if reference address of given person is null nothing to do and
+	 * the method returns false otherwise inserts person into the table 
+	 * and returns true. 
+	 * @param p
+	 * @return
+	 * @throws SQLException
+	 */
 	public boolean create(Person p) throws SQLException {
 	
 		if (p == null) 
@@ -40,6 +49,14 @@ public class PersonRepository {
 		return true;
 	}
 	
+	/**
+	 * this method looks for given id in the table personen.
+	 * if id is found method returns all attributes of this person in form  of 
+	 * class Person.
+	 * @param id
+	 * @return
+	 * @throws SQLException
+	 */
 	public Person get(long id) throws SQLException {
 		
 		query = "SELECT * FROM personen WHERE id=?";
@@ -62,7 +79,16 @@ public class PersonRepository {
 		  }
 		return null;
 	}
-		
+	
+	/**
+	 * in this method will be checked if the person who should be changed exists in
+	 * the table. If the reference address of this given person is null or id of
+	 * given person doesn't exists in the table nothing to do and the method returns false
+	 * otherwise the row for this id will be updated and method returns true. 
+	 * @param p
+	 * @return
+	 * @throws SQLException
+	 */
 	public boolean update(Person p) throws SQLException {
 
 		if (p == null)                // person points of null 
@@ -83,7 +109,16 @@ public class PersonRepository {
 		  }	
 		return true;
 	}
-		
+	
+	/**
+	 * in this method it will be checked if the given person p exists in the table.
+	 * if reference address of given person is null or the person doesn't exist in the table
+	 * nothing to do and the method returns false, otherwise found person 
+	 * will be deleted from the table. 
+	 * @param p
+	 * @return
+	 * @throws SQLException
+	 */
 	public boolean delete(Person p) throws SQLException {
 		
 		if (p == null)                // person points of null 
@@ -104,6 +139,14 @@ public class PersonRepository {
 		return true;
 	}
 	
+	/**
+	 * in this method it will be checked if the given id exists in the table.
+	 * if no nothing to do and the method returns false, otherwise found id 
+	 * will be deleted from the table. 
+	 * @param id
+	 * @return
+	 * @throws SQLException
+	 */
 	public boolean delete(long id) throws SQLException {
 		
 		if (get(id) == null)   // person doesn't exist in DB
@@ -115,12 +158,18 @@ public class PersonRepository {
 			ps.execute();
 		} catch (SQLException ex) {
 			System.out.println("Ein Fehler beim DELETE mit ID aufgetretten! ");
-			System.out.println(ex.getSQLState());
-			System.out.println(ex.getLocalizedMessage());
+			ex.getSQLState();
+			ex.getLocalizedMessage();
 		  }
 		return true;
 	}
 	
+	/**
+	 * At first it will be checked in this method if the table is empty.
+	 * is not so all persons or lines will be deleted from table personen.
+	 * @return
+	 * @throws SQLException
+	 */
 	public boolean deleteAll() throws SQLException {
 	
 		query = "SELECT COUNT(*) FROM personen";
@@ -137,14 +186,23 @@ public class PersonRepository {
 		  }
 		return true; 
 	}
-		
-	public void printRecord(ResultSet result) throws SQLException {	
+	
+	/**
+	 * this method prints all attributes of a person from table personen on demand.
+	 * @param result
+	 * @throws SQLException
+	 */
+	private void printRecord(ResultSet result) throws SQLException {	
 		while (result.next()) {
 			System.out.println("|  " + result.getLong(1) + " |      " + result.getByte(2)
 				+ " | " + result.getString(3) + " | " + result.getString(4));
 		}		
 	}
 	
+	/**
+	 * in this method all records or persons will be printed from table personen.
+	 * @throws SQLException
+	 */
 	public void printRecords() throws SQLException {
 		query = "SELECT * FROM personen";
 		Statement st = connection.createStatement();
@@ -155,10 +213,16 @@ public class PersonRepository {
 		}		
 	}
 	
+	/**
+	 * this method goes through the lines in table and stores in a list of Persons.
+	 * Address of each line will be stored in an element of array list Person[].
+	 * finally list of persons will be printed by using method printList().   
+	 * @return
+	 * @throws Exception
+	 */
 	public Person[] getAll() throws Exception {
-		
 			Person[] list = new Person[size()];
-			result.beforeFirst();                    // move cursur to the beginning of first record
+			result.beforeFirst();                   // move cursur to the beginning of first record
 			int index = 0;
 			while (result.next()) {
 				Person person = new Person();
@@ -218,8 +282,15 @@ public class PersonRepository {
 		return list;
 	}
 	
-	public int size() throws SQLException {
-		
+	/**
+	 * this method returns number of records in DB.
+	 * This would be count of persons who are inserted in table personen.
+	 * result.last() returns address of the last line in the table. 
+	 * result.getRow() returns id of the last line. 
+	 * @return number of the lines as integer
+	 * @throws SQLException
+	 */
+	public int size() throws SQLException {	
 		query = "SELECT * FROM personen";
 		try (Statement st = connection.createStatement()) {
 			result = st.executeQuery(query);
