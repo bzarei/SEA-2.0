@@ -50,10 +50,11 @@ public class Menu implements Closeable {
 		System.out.println("* ----------------------------------- *");
 		System.out.println("*   1. Person anlegen                 *");
 		System.out.println("*   2. Person löschen                 *");
-		System.out.println("*   3. Personenliste zeigen           *");
-		System.out.println("*   4. Personenliste löschen          *");
-		System.out.println("*   5. Anzahl der Personen            *");
-		System.out.println("*   6. Suche Personen                 *");
+		System.out.println("*   3. Person Name Ändern             *");
+		System.out.println("*   4. Personenliste zeigen           *");
+		System.out.println("*   5. Personenliste löschen          *");
+		System.out.println("*   6. Anzahl der Personen            *");
+		System.out.println("*   7. Suche Personen                 *");
 		System.out.println("* ----------------------------------- *");
 		System.out.println("*   Q. Programm beenden               *");
 		System.out.println("***************************************");
@@ -98,15 +99,18 @@ public class Menu implements Closeable {
 			removePerson();
 			break;
 		case "3":
-			listAllPersons();
+			updatePerson();
 			break;
 		case "4":
-			removeAll();
+			listAllPersons();
 			break;
 		case "5":
-			countPersons();
+			removeAll();
 			break;
 		case "6":
+			countPersons();
+			break;
+		case "7":
 			searchPerson();
 			break;
 		case "Q":
@@ -184,49 +188,71 @@ public class Menu implements Closeable {
 		}
 	}
 
-	// 3. Personenliste zeigen
-	private void listAllPersons() throws SQLException {
-		printHeadline();
-		personRepo.printRecords();	
-		personRepo.getAll();
+	// 3. Person Ändern (Vorname oder Nachname)
+	private void updatePerson() throws SQLException {
+
+		System.out.print("ID zum Ändern: ");
+		long l = scanner.nextLong();
+		scanner.nextLine();
+		Person person = new Person();	
+		person.setId(l);
+				
+		System.out.println("evtl. neue Vorname eingeben:");
+		String name = scanner.nextLine().trim();
+		person.setName(name);
+		System.out.println("neue Nachname eingeben:");
+		String lastname = scanner.nextLine().trim();
+		person.setLastname(lastname);
+		if (!personRepo.update(person)) {
+			System.out.println("Kein Update möglich: Person nicht gefunden!");
+		}
+		else 
+			System.out.println("new: " + name + " " + lastname);
 	}
 
-	// 4. Personenliste löschen
+	// 4. Personenliste zeigen
+	private void listAllPersons() throws SQLException {
+		//printHeadline();              // only use for delivery from DB    
+		//personRepo.printRecords();	// from DB
+		personRepo.getAll();            // from the list: Person[]
+	}
+
+	// 5. Personenliste löschen
 	private void removeAll() throws SQLException {
 		personRepo.deleteAll();
 	}
 
-	// 5. Anzahl freien Plätze zeigen
+	// 6. Anzahl freien Plätze zeigen
 	private void countPersons() throws SQLException {
-		personRepo.size();
+		System.out.println("Aktuelle Anzahl der Teilnehmern: " + personRepo.size());
 	}
 
-	// 6. Suche Personen
+	// 7. Suche Personen
 	private void searchPerson() throws IOException, SQLException {
 		keepSearch();
 	}
 	
-	// 6.1 Suche Personen nach Vorname
+	// 7.1 Suche Personen nach Vorname
 	private void searchPersonByName() {
 		System.out.println(" under construction " );
 	}
 
-	// 6.2 Suche Personen nach Nachname
+	// 7.2 Suche Personen nach Nachname
 	private void searchPersonBySurname() {
 		System.out.println(" under construction " );
 	}
 
-	// 6.3 Suche Personen nach Teilnehmer-Id
+	// 7.3 Suche Personen nach Teilnehmer-Id
 	private void searchPersonById() throws SQLException {
 
 		System.out.print("Id zum Suchen: ");
 		long l = scanner.nextLong();
 		scanner.nextLine();
 		if (personRepo.get(l) != null) {
-		System.out.println("ID: " + personRepo.get(l).getId() 
-				+ "  Anrede: " + personRepo.get(l).getSalutation()
-				+ "  Vorname: " + personRepo.get(l).getName() 
-				+ "  Nachname: " + personRepo.get(l).getLastname());
+		System.out.println("Id: " + personRepo.get(l).getId() 
+				+ " " + personRepo.get(l).getSalutation()
+				+ " " + personRepo.get(l).getName() 
+				+ " " + personRepo.get(l).getLastname());
 		}
 		else System.out.println("Person mit Id " + l + " nicht gefunden!");
 	}

@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import de.telekom.sea2.model.Person;
 import de.telekom.sea2.lookup.Salutation;
 
@@ -23,22 +22,21 @@ public class PersonRepository {
 	
 	public boolean create(Person p) throws SQLException {
 	
-//		if (get(p.getId()) != null) {
-//			return false;
-//		}
+		if (p == null) 
+			return false;
 		
-		query = "INSERT INTO personen (ID, SALUTATION, NAME, LASTNAME) VALUES ( ?, ?, ?, ? )";
-		
+		query = "INSERT INTO personen (ID, SALUTATION, NAME, LASTNAME) VALUES ( ?, ?, ?, ? )";		
 		try (PreparedStatement ps = connection.prepareStatement(query)) {
 			ps.setLong(1, p.getId());
 			ps.setByte(2, p.getSalutation().toByte());
 			ps.setString(3, p.getName());
 			ps.setString(4, p.getLastname());
 			ps.execute();
-		}
-		catch (Exception ex) {
+		} catch (SQLException ex) {
 			System.out.println(" Ein Fehler beim INSERT in DB aufgetretten! ");
-		}
+			System.out.println(ex.getLocalizedMessage());
+			System.out.println(ex.getSQLState());
+		  }
 		return true;
 	}
 	
@@ -60,15 +58,17 @@ public class PersonRepository {
 	}
 	
 	public boolean update(Person p) throws SQLException {
-//		
-//		if (get(p.getId()) == null) {
-//			return false;
-//		}
-		query = "UPDATE personen SET lastname=? , name=? WHERE id=?"; 
+
+		if (p == null)                // person points of null 
+			return false;
+		if (get(p.getId()) == null)   // person doesn't exist in DB
+			return false;
+		
+		query = "UPDATE personen SET name=?, lastname=? WHERE id=?"; 
 		try (PreparedStatement ps = connection.prepareStatement(query)) {
-			ps.setString(4, p.getLastname());
-			ps.setString(3, p.getName());
-			ps.setLong(1, p.getId());
+			ps.setString(1, p.getName());
+			ps.setString(2, p.getLastname());
+			ps.setLong(3, p.getId());
 			ps.execute();
 		} catch (SQLException ex) {
 			System.out.println(" Ein Fehler beim UPDATE in DB aufgetretten! ");
@@ -80,9 +80,10 @@ public class PersonRepository {
 		
 	public boolean delete(Person p) throws SQLException {
 		
-		if (this.get(p.getId()) == null) {
+		if (p == null)                // person points of null 
 			return false;
-		}
+		if (get(p.getId()) == null)   // person doesn't exist in DB
+			return false;
 		
 		query = "DELETE FROM personen WHERE id=?";
 		try (PreparedStatement ps = connection.prepareStatement(query)) {
@@ -92,17 +93,17 @@ public class PersonRepository {
 			System.out.println(" Fehler beim DELETE in DB aufgetretten! ");
 			System.out.println(ex.getSQLState());
 			System.out.println(ex.getLocalizedMessage());
+			ex.fillInStackTrace();
 		  }
 		return true;
 	}
 	
 	public boolean delete(long id) throws SQLException {
 		
-		if (get(id) == null) {
+		if (get(id) == null)   // person doesn't exist in DB
 			return false;
-		}
-		query = "DELETE FROM personen WHERE id=?";
 		
+		query = "DELETE FROM personen WHERE id=?";	
 		try (PreparedStatement ps = connection.prepareStatement(query)) {
 			ps.setLong(1, id);
 			ps.execute();
@@ -117,13 +118,17 @@ public class PersonRepository {
 	public boolean deleteAll() throws SQLException {
 	
 		query = "SELECT COUNT(*) FROM personen";
-		Statement ps = connection.createStatement();
-		result = ps.executeQuery(query); 
-		result.next();
-		if (result.getInt(1) == 0) 
-			return false;
-		query = "DELETE FROM personen";
-		ps.execute(query);
+		try (Statement ps = connection.createStatement()) { 
+			result = ps.executeQuery(query); 
+			result.next();
+			if (result.getInt(1) == 0) 
+				return false;
+			query = "DELETE FROM personen";
+			ps.execute(query);
+		} catch (SQLException ex) {
+			System.out.println("Ein Fehler innerhalb Methode deleteAll() aufgetretten! ");
+			ex.fillInStackTrace();
+		  }
 		return true; 
 	}
 		
@@ -155,8 +160,7 @@ public class PersonRepository {
 				person.setSalutation(Salutation.fromByte(result.getByte(2)));
 				person.setName(result.getString(3));
 				person.setLastname(result.getString(4));
-				list[index] = person;
-				++index;
+				list[index++] = person;
 			}
 			printList(list);
 			return list;
@@ -165,12 +169,16 @@ public class PersonRepository {
 	public int size() throws SQLException {
 		
 		query = "SELECT * FROM personen";
-		Statement st = connection.createStatement();
-		result = st.executeQuery(query);
-		if (result.first()) {
-			result.last();
-			return result.getRow(); 
-		}
+		try (Statement st = connection.createStatement()) {
+			result = st.executeQuery(query);
+			if (result.first()) {
+				result.last();
+				return result.getRow(); 
+			}
+		} catch (SQLException ex) {
+			System.out.println("Ein Fehler bei der Ermittlung von size aufgetretten! ");
+			ex.fillInStackTrace();
+		  }
 		return 0;
 	}
 	
