@@ -11,11 +11,11 @@ import java.sql.SQLException;
 
 public class Menu implements Closeable {
 
-	private PersonRepository list;
+	private PersonRepository personRepo;
 	private Scanner scanner = new Scanner(System.in);
 
-	public void setMyList(PersonRepository myList) {
-		list = myList;
+	public void setRepository(PersonRepository repo) {
+		personRepo = repo;
 	}
 
 	@Override 
@@ -33,7 +33,7 @@ public class Menu implements Closeable {
 		} while (!choice.toUpperCase().equals("Q"));
 	}
 
-	public void keepSearch() throws IOException {
+	public void keepSearch() throws IOException, SQLException {
 		String choice;
 		do {
 			showSearchMenu();
@@ -98,10 +98,7 @@ public class Menu implements Closeable {
 			removePerson();
 			break;
 		case "3":
-//			if (list.size() > 0) {
-				listAllPersons();
-//			} else
-//				System.out.println("Die Liste der Teilnehmer ist leer!");
+			listAllPersons();
 			break;
 		case "4":
 			removeAll();
@@ -129,8 +126,9 @@ public class Menu implements Closeable {
 	 * @param eingabe
 	 * @throws MyException
 	 * @throws IOException
+	 * @throws SQLException 
 	 */
-	private void checkSearchMenu(String eingabe) throws IOException {
+	private void checkSearchMenu(String eingabe) throws IOException, SQLException {
 		switch (eingabe.toUpperCase()) {
 		case "1":
 			searchPersonByName();
@@ -155,21 +153,21 @@ public class Menu implements Closeable {
 		System.out.println("Anrede eingeben:");
 		String salu = scanner.nextLine().trim();
 		try {
-			//person.setAnrede(Salutation.fromString(salu));
+			person.setSalutation(Salutation.fromString(salu));
 		} catch (Exception e) {
-			System.out.println("Anrede darf nur Frau,Herr,Sonstiges sein!");
+			System.out.println("Anrede darf nur Mrs/Frau, Mr/Herr, Others/Sonstiges sein!");
 			return;
 		}
 		System.out.println("Vorname eingeben:");
 		String name = scanner.nextLine().trim();
-		//person.setVorname(name);
+		person.setName(name);
 
 		System.out.println("Nachname eingeben:");
 		String lastname = scanner.nextLine().trim();
-		//person.setNachname(lastname);
+		person.setLastname(lastname);
 
 		if ((name != "") || (lastname != "")) {
-			list.create(person);
+			personRepo.create(person);
 		} else
 			System.out.println("Name und Nachname sind leer. Anmeldung konnte nicht erfolgen!\n"
 					+ "bitte nochmal mit Auswahl '1' versuchen:");
@@ -181,89 +179,54 @@ public class Menu implements Closeable {
 		System.out.print("ID zum löschen: ");
 		long l = scanner.nextLong();
 		scanner.nextLine();
-
-		if (!list.delete(l)) {
+		if (!personRepo.delete(l)) {
 			System.out.println("=> Id: " + l + " nicht gefunden!");
 		}
 	}
 
 	// 3. Personenliste zeigen
-	private void listAllPersons() {
-
-		System.out.println("---------------------------------------");
-		System.out.println("  Inhalt der Liste  ");
-		System.out.println("---------------------------------------");
-		printList(list);
-		freeCapacity();
+	private void listAllPersons() throws SQLException {
+		personRepo.printRecords();		
 	}
 
 	// 4. Personenliste löschen
 	private void removeAll() throws SQLException {
-		list.deleteAll();
+		personRepo.deleteAll();
 	}
 
 	// 5. Anzahl freien Plätze zeigen
 	private void freeCapacity() {
-//		System.out.println("Freie Plätze: " + (list.getMaxsize() - list.size())
-//				+ " - belegt: " + list.size());
-		System.out.println(" in construction " );
-		
+		System.out.println(" under construction " );
 	}
 
 	// 6. Suche Personen
-	private void searchPerson() throws IOException {
+	private void searchPerson() throws IOException, SQLException {
 		keepSearch();
 	}
 	
 	// 6.1 Suche Personen nach Vorname
 	private void searchPersonByName() {
-
-		System.out.print("Vorname zum Suchen: ");
-		String lastname = scanner.nextLine();
-//		PersonRepository subset = list.get(lastname);
-//		printLable(subset);
+		System.out.println(" under construction " );
 	}
 
 	// 6.2 Suche Personen nach Nachname
 	private void searchPersonBySurname() {
-
-		System.out.print("Nachname zum Suchen: ");
-		String lastname = scanner.nextLine();
-//		PersonRepository subset = list.get(lastname);
-//		printLable(subset);
+		System.out.println(" under construction " );
 	}
 
 	// 6.3 Suche Personen nach Teilnehmer-Id
-	private void searchPersonById() {
+	private void searchPersonById() throws SQLException {
 
 		System.out.print("Id zum Suchen: ");
 		long l = scanner.nextLong();
 		scanner.nextLine();
-//		PersonRepository subset = list.get(l);
-//		printLable(subset);
-	}
-
-	// Header für die ausgegebene Trefferliste
-	private void printLable(Object subset) {
-		System.out.println("---------------------------------------");
-		System.out.println("             Such-Ergebnis             ");
-		System.out.println("---------------------------------------");
-//		printList((MyList) subset);
-	}
-
-	// Ausgabe der Array-Elemente bzw. Teilnehmerliste
-	private void printList(PersonRepository list) {
-//		if (list.size() > 0) {
-//			for (int i = 0; i < list.size(); i++) {
-//				if (list.get(i) != null)
-//					System.out.println("Id: " + ((Person) list.get(i)).getId() + " - "
-//							+ ((Person) list.get(i)).getAnrede().toString() + " " + ((Person) list.get(i)).getVorname()
-//							+ " " + ((Person) list.get(i)).getNachname());
-//			}
-//		}
-//		else 
-			System.out.println("keinen Treffer!!");
-		System.out.println();
+		if (personRepo.get(l) != null) {
+		System.out.println("ID: " + personRepo.get(l).getId() 
+				+ "  Anrede: " + personRepo.get(l).getSalutation()
+				+ "  Vorname: " + personRepo.get(l).getName() 
+				+ "  Nachname: " + personRepo.get(l).getLastname());
+		}
+		else System.out.println("Person mit Id " + l + " nicht gefunden!");
 	}
 
 } // Ende Class Menu

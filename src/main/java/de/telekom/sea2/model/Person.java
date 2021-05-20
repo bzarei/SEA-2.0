@@ -18,6 +18,22 @@ public class Person {
 		this.id = idCounter++;
 	}
 	
+	public void setId(long id) {
+		this.id = id;
+	}
+	
+	public void setSalutation(Salutation salu) {	
+		this.salu = salu;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public void setLastname(String lastname) {
+		this.lastname = lastname;
+	}
+	
 	public long getId() {
 		return id;
 	}
