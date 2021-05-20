@@ -52,7 +52,7 @@ public class Menu implements Closeable {
 		System.out.println("*   2. Person löschen                 *");
 		System.out.println("*   3. Personenliste zeigen           *");
 		System.out.println("*   4. Personenliste löschen          *");
-		System.out.println("*   5. Anzahl freie Plätze zeigen     *");
+		System.out.println("*   5. Anzahl der Personen            *");
 		System.out.println("*   6. Suche Personen                 *");
 		System.out.println("* ----------------------------------- *");
 		System.out.println("*   Q. Programm beenden               *");
@@ -104,7 +104,7 @@ public class Menu implements Closeable {
 			removeAll();
 			break;
 		case "5":
-			freeCapacity();
+			countPersons();
 			break;
 		case "6":
 			searchPerson();
@@ -186,7 +186,9 @@ public class Menu implements Closeable {
 
 	// 3. Personenliste zeigen
 	private void listAllPersons() throws SQLException {
-		personRepo.printRecords();		
+		printHeadline();
+		personRepo.printRecords();	
+		personRepo.getAll();
 	}
 
 	// 4. Personenliste löschen
@@ -195,8 +197,8 @@ public class Menu implements Closeable {
 	}
 
 	// 5. Anzahl freien Plätze zeigen
-	private void freeCapacity() {
-		System.out.println(" under construction " );
+	private void countPersons() throws SQLException {
+		personRepo.size();
 	}
 
 	// 6. Suche Personen
@@ -227,6 +229,12 @@ public class Menu implements Closeable {
 				+ "  Nachname: " + personRepo.get(l).getLastname());
 		}
 		else System.out.println("Person mit Id " + l + " nicht gefunden!");
+	}
+	
+	private void printHeadline() {
+		System.out.println("+----+--------+---------+------------+");
+		System.out.println("| ID | ANREDE | VORNAME | NACHNAME   |");
+		System.out.println("+----+--------+---------+------------+");
 	}
 
 } // Ende Class Menu
