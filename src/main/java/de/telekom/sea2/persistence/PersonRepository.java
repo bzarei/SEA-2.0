@@ -24,6 +24,7 @@ public class PersonRepository {
 	 * if reference address of given person is null nothing to do and
 	 * the method returns false otherwise inserts person into the table 
 	 * and returns true. 
+	 * Id for each person is calculated from the size(): next free id = size()+1
 	 * @param p
 	 * @return
 	 * @throws SQLException
@@ -35,7 +36,7 @@ public class PersonRepository {
 		
 		query = "INSERT INTO personen (ID, SALUTATION, NAME, LASTNAME) VALUES ( ?, ?, ?, ? )";		
 		try (PreparedStatement ps = connection.prepareStatement(query)) {
-			ps.setLong(1, p.getId());
+			ps.setLong(1, size()+1);
 			ps.setByte(2, p.getSalutation().toByte());
 			ps.setString(3, p.getName());
 			ps.setString(4, p.getLastname());
