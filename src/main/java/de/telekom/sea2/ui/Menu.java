@@ -1,7 +1,6 @@
 package de.telekom.sea2.ui;
 
 import java.util.Scanner;
-
 import de.telekom.sea2.lookup.Salutation;
 import de.telekom.sea2.model.Person;
 import de.telekom.sea2.persistence.PersonRepository;
@@ -24,7 +23,7 @@ public class Menu implements Closeable {
 		System.out.println("Das Programm ist jetzt beendet. Goodbye!!");
 	}
 
-	public void keepAsking() throws IOException, SQLException {
+	public void keepAsking() throws Exception {
 		String choice;  
 		do {
 			showMenu();
@@ -86,11 +85,10 @@ public class Menu implements Closeable {
 	 * diese Methode bietet Optionen aus Hauptmenü für einen Teilnehmer oder Teilnehmerliste
 	 * 
 	 * @param eingabe
+	 * @throws Exception 
 	 * @throws MyException
-	 * @throws IOException
-	 * @throws SQLException 
 	 */
-	private void checkMenu(String eingabe) throws IOException, SQLException {
+	private void checkMenu(String eingabe) throws Exception {
 		switch (eingabe.toUpperCase()) {
 		case "1":
 			inputPerson();
@@ -135,10 +133,10 @@ public class Menu implements Closeable {
 	private void checkSearchMenu(String eingabe) throws IOException, SQLException {
 		switch (eingabe.toUpperCase()) {
 		case "1":
-			searchPersonByName();
+			searchPersonByName("1");
 			break;
 		case "2":
-			searchPersonBySurname();
+			searchPersonByName("2");
 			break;
 		case "3":
 			searchPersonById();
@@ -175,7 +173,6 @@ public class Menu implements Closeable {
 		} else
 			System.out.println("Name und Nachname sind leer. Anmeldung konnte nicht erfolgen!\n"
 					+ "bitte nochmal mit Auswahl '1' versuchen:");
-
 	}
 
 	// 2. Person löschen
@@ -211,7 +208,7 @@ public class Menu implements Closeable {
 	}
 
 	// 4. Personenliste zeigen
-	private void listAllPersons() throws SQLException {
+	private void listAllPersons() throws Exception {
 		//printHeadline();              // only use for delivery from DB    
 		//personRepo.printRecords();	// from DB
 		personRepo.getAll();            // from the list: Person[]
@@ -232,16 +229,20 @@ public class Menu implements Closeable {
 		keepSearch();
 	}
 	
-	// 7.1 Suche Personen nach Vorname
-	private void searchPersonByName() {
-		System.out.println(" under construction " );
+	// 7.1 & 7.2 Suche Personen nach Vorname oder Nachname 
+	private void searchPersonByName(String eingabe) throws SQLException {
+		switch (eingabe) {	
+			case "1":
+				System.out.print("Vorname zum Suchen: ");
+				break;
+			case "2":	
+				System.out.print("Nachname zum Suchen: ");
+				break;
+		}
+		String name = scanner.nextLine().trim();
+		personRepo.getSimilarNames(name, eingabe);
 	}
-
-	// 7.2 Suche Personen nach Nachname
-	private void searchPersonBySurname() {
-		System.out.println(" under construction " );
-	}
-
+	
 	// 7.3 Suche Personen nach Teilnehmer-Id
 	private void searchPersonById() throws SQLException {
 

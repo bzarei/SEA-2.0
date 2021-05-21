@@ -1,10 +1,8 @@
 package de.telekom.sea2;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
 import de.telekom.sea2.persistence.PersonRepository;
 import de.telekom.sea2.ui.*;
 
@@ -32,10 +30,10 @@ public class SeminarApp {
 	}
 
 	private void dbConnenct() throws ClassNotFoundException, SQLException {
-		
 		final String DRIVER = "org.mariadb.jdbc.Driver";
+		final String dbConfig = "jdbc:mariadb://localhost:3306/seadb?user=seauser&password=seapass";
 		Class.forName(DRIVER);
-		connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/seadb?user=seauser&password=seapass");	
+		connection = DriverManager.getConnection(dbConfig);	
 	}
 	
 	private void dbDisconnect() throws SQLException {
@@ -43,7 +41,7 @@ public class SeminarApp {
 			connection.close();
 	}
 	
-	public void run(String[] args) throws IOException, SQLException, ClassNotFoundException {
+	public void run(String[] args) throws Exception {
 
 		try (Menu menu = new Menu()) {
 			dbConnenct();
