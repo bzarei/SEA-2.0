@@ -13,6 +13,7 @@ public class PersonRepository {
 	private Connection connection;
 	private String query;
 	private ResultSet result;
+
 	
 	// constructor
 	public PersonRepository(Connection co) {	
@@ -36,7 +37,7 @@ public class PersonRepository {
 		
 		query = "INSERT INTO personen (ID, SALUTATION, NAME, LASTNAME) VALUES ( ?, ?, ?, ? )";		
 		try (PreparedStatement ps = connection.prepareStatement(query)) {
-			ps.setLong(1, size()+1);
+			ps.setLong(1, getNextfreeId());
 			ps.setByte(2, p.getSalutation().toByte());
 			ps.setString(3, p.getName());
 			ps.setString(4, p.getLastname());
@@ -168,6 +169,22 @@ public class PersonRepository {
 			return false;
 		  }
 		return true;
+	}
+	
+	/**
+	 * this method is only for trying to see a case of sql-injection.
+	 * @param name
+	 * Result is as following:
+	 * query:
+	 * SELECT FROM personen WHERE name='Micki'; delete from personen where id=2;--';
+	 * name as input parameter is:
+	 * badSelect("Micki'; delete from personen where id=2;--");
+	 * @throws SQLException
+	 */
+	public void badSelect(String name) throws SQLException {	
+		
+		query = "SELECT FROM personen WHERE name=" + "'" + name + "';";	
+		System.out.println("query:" + query);
 	}
 	
 	/**
@@ -310,13 +327,39 @@ public class PersonRepository {
 			result = st.executeQuery(query);
 			if (result.first()) {
 				result.last();
-				return result.getRow(); 
+				return result.getRow();
 			}
 		} catch (SQLException ex) {
 			System.out.println("Ein Fehler bei der Ermittlung von size aufgetretten! ");
 			ex.fillInStackTrace();
 		  }
 		return 0;
+	}
+	
+	/**
+	 * this method calculates the next free id in the tables personen as following:
+	 * The last id in the list of all persons in the table from column 1 (id)
+	 * will be increased as next free id for a new person.  
+	 * @return int
+	 * @throws SQLException 
+	 */
+	private long getNextfreeId() throws SQLException {
+		
+		long id = 0;
+		String query= "SELECT * FROM personen";
+		try (Statement st = connection.createStatement()) {
+			result = st.executeQuery(query);
+				while (result.next()) {
+					if (result.getLong(1) > id) {
+						id = result.getLong(1);
+					}
+				}
+			} catch (Exception e) {
+				System.out.println(" Ein Fehler beim Aufruf von getNextfreeId() aufgetretten! ");
+				result.close();
+			  }
+		result.close();
+		return ++id;
 	}
 	
 	/**
