@@ -3,7 +3,6 @@ package de.telekom.sea2;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
 import de.telekom.sea2.persistence.PersonRepository;
 import de.telekom.sea2.ui.*;
 

@@ -13,7 +13,6 @@ public class PersonRepository {
 	private Connection connection;
 	private String query;
 	private ResultSet result;
-
 	
 	// constructor
 	public PersonRepository(Connection co) {	
@@ -45,6 +44,7 @@ public class PersonRepository {
 			System.out.println(" Ein Fehler beim INSERT in DB aufgetretten! ");
 			System.out.println(ex.getLocalizedMessage());
 			System.out.println(ex.getSQLState());
+			return false;
 		  }
 		return true;
 	}
@@ -62,22 +62,24 @@ public class PersonRepository {
 		query = "SELECT * FROM personen WHERE id=?";
 		try (PreparedStatement ps = connection.prepareStatement(query)) {
 			ps.setLong(1, id);
-				result = ps.executeQuery();
-				if (result.next()) {
-					Person person = new Person();
-					person.setId(result.getLong(1));
-					person.setSalutation(Salutation.fromByte(result.getByte(2)));
-					person.setName(result.getString(3));
-					person.setLastname(result.getString(4));
-					return person;
-				} 
-				return null;
+			result = ps.executeQuery();
+			if (result.next()) {
+				Person person = new Person();
+				person.setId(result.getLong(1));
+				person.setSalutation(Salutation.fromByte(result.getByte(2)));
+				person.setName(result.getString(3));
+				person.setLastname(result.getString(4));
+				result.close();
+				return person;
+			} 
+			result.close();
+			return null;
 		} catch (SQLException ex) {
 			System.out.println(" Ein Fehler in Methode get(id) aufgetretten! ");
 			ex.getSQLState();
 			ex.getLocalizedMessage();
+			return null;
 		  }
-		return null;
 	}
 	
 	/**
@@ -106,6 +108,7 @@ public class PersonRepository {
 			System.out.println(" Ein Fehler beim UPDATE in DB aufgetretten! ");
 			System.out.println(ex.getSQLState());
 			System.out.println(ex.getLocalizedMessage());
+			return false;
 		  }	
 		return true;
 	}
@@ -135,6 +138,7 @@ public class PersonRepository {
 			System.out.println(ex.getSQLState());
 			System.out.println(ex.getLocalizedMessage());
 			ex.fillInStackTrace();
+			return false;
 		  }
 		return true;
 	}
@@ -160,6 +164,7 @@ public class PersonRepository {
 			System.out.println("Ein Fehler beim DELETE mit ID aufgetretten! ");
 			ex.getSQLState();
 			ex.getLocalizedMessage();
+			return false;
 		  }
 		return true;
 	}
@@ -176,14 +181,17 @@ public class PersonRepository {
 		try (Statement ps = connection.createStatement()) { 
 			result = ps.executeQuery(query); 
 			result.next();
-			if (result.getInt(1) == 0) 
+			if (result.getInt(1) == 0) {
+				result.close();
 				return false;
+			}	
 			query = "DELETE FROM personen";
 			ps.execute(query);
 		} catch (SQLException ex) {
 			System.out.println("Ein Fehler innerhalb Methode deleteAll() aufgetretten! ");
 			ex.fillInStackTrace();
 		  }
+		result.close();
 		return true; 
 	}
 	
@@ -205,12 +213,14 @@ public class PersonRepository {
 	 */
 	public void printRecords() throws SQLException {
 		query = "SELECT * FROM personen";
-		Statement st = connection.createStatement();
-		result = st.executeQuery(query);
-		while (result.next()) {
-			System.out.println("|  " + result.getLong(1) + " |      " + result.getByte(2)
-				+ " | " + result.getString(3) + " | " + result.getString(4));
-		}		
+		try (Statement st = connection.createStatement()) {
+			result = st.executeQuery(query);
+			while (result.next()) {
+				System.out.println("|  " + result.getLong(1) + " |      " + result.getByte(2)
+					+ " | " + result.getString(3) + " | " + result.getString(4));
+			}
+		} catch (SQLException ex) {	result.close(); }
+		result.close();
 	}
 	
 	/**
@@ -233,6 +243,7 @@ public class PersonRepository {
 				list[index++] = person;
 			}
 			printList(list);
+			result.close();
 			return list;
 	}
 	
@@ -273,12 +284,14 @@ public class PersonRepository {
 				}
 				printList(list);
 			}
+			result.close();
 			return list;
 		} catch (Exception ex) {
 			System.out.println(" Ein Fehler in Methode getSimilarNames aufgetretten! ");
 			ex.getLocalizedMessage();
 			ex.fillInStackTrace();
 		  }
+		result.close();
 		return list;
 	}
 	

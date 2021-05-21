@@ -1,7 +1,6 @@
 package de.telekom.sea2.ui;
 
 import java.util.Scanner;
-
 import de.telekom.sea2.lookup.Salutation;
 import de.telekom.sea2.model.Person;
 import de.telekom.sea2.persistence.PersonRepository;
